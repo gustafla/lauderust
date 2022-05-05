@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -25,7 +25,8 @@ async fn main() -> Result<()> {
     println!(
         "{:#?}",
         reqwest::get("https://hackathlon.nitorio.us/me")
-            .await?
+            .await
+            .context("Cannot fetch user information")?
             .json::<User>()
             .await?
     );
