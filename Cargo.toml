@@ -12,3 +12,5 @@ wasm-bindgen-futures = "0.4.30"
 yew = "0.19.3"
 wasm-logger = "0.2.0"
 log = "0.4.17"
+gloo-timers = { version = "0.2.4", features = ["futures"] }
+futures-util = "0.3.21"
