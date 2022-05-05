@@ -20,14 +20,28 @@ struct Flight {
     name: String,
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Location {
+    lat: f64,
+    long: f64,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct UserLocation {
+    user_id: String,
+    coordinates: Location,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     println!(
         "{:#?}",
-        reqwest::get("https://hackathlon.nitorio.us/me")
+        reqwest::get("https://hackathlon.nitorio.us/coordinates")
             .await
             .context("Cannot fetch user information")?
-            .json::<User>()
+            .json::<Vec<UserLocation>>()
             .await?
     );
 
