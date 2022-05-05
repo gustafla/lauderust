@@ -1,7 +1,7 @@
 use anyhow::Result;
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct User {
     id: String,
@@ -13,7 +13,7 @@ struct User {
     activity_id: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct Flight {
     id: String,
@@ -22,5 +22,13 @@ struct Flight {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!(
+        "{:#?}",
+        reqwest::get("https://hackathlon.nitorio.us/me")
+            .await?
+            .json::<User>()
+            .await?
+    );
+
     Ok(())
 }
