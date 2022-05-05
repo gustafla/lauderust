@@ -53,12 +53,16 @@ fn user_list(UserListProps { users }: &UserListProps) -> Html {
 #[function_component(App)]
 fn app() -> Html {
     let users = use_state(|| vec![]);
+    log::info!("a");
     {
+        log::info!("b");
         let users = users.clone();
         use_effect_with_deps(
             move |_| {
+                log::info!("c");
                 let users = users.clone();
                 wasm_bindgen_futures::spawn_local(async move {
+                    log::info!("d");
                     let fetched: Vec<User> = Request::get("https://hackathlon.nitorio.us/users")
                         .send()
                         .await
@@ -82,5 +86,6 @@ fn app() -> Html {
 }
 
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
     yew::start_app::<App>();
 }
