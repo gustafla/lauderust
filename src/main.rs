@@ -1,7 +1,8 @@
+use reqwasm::http::Request;
 use serde::Deserialize;
 use yew::prelude::*;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 struct User {
     id: String,
@@ -34,45 +35,52 @@ struct UserLocation {
     coordinates: Location,
 }
 
-enum Msg {
-    AddOne,
+#[derive(Clone, Properties, PartialEq)]
+struct UserListProps {
+    users: Vec<User>,
 }
 
-struct Model {
-    value: i64,
+#[function_component(UserList)]
+fn user_list(UserListProps { users }: &UserListProps) -> Html {
+    users
+        .iter()
+        .map(|user| {
+            html! {<p>{format!("{:#?}", user)}</p>}
+        })
+        .collect()
 }
 
-impl Component for Model {
-    type Message = Msg;
-    type Properties = ();
-
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { value: 0 }
+#[function_component(App)]
+fn app() -> Html {
+    let users = use_state(|| vec![]);
+    {
+        let users = users.clone();
+        use_effect_with_deps(
+            move |_| {
+                let users = users.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    let fetched: Vec<User> = Request::get("https://hackathlon.nitorio.us/users")
+                        .send()
+                        .await
+                        .unwrap()
+                        .json()
+                        .await
+                        .unwrap();
+                    users.set(fetched);
+                });
+                || ()
+            },
+            (),
+        );
     }
-
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::AddOne => {
-                self.value += 1;
-                // the value has changed so we need to
-                // re-render for it to appear on the page
-                true
-            }
-        }
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        // This gives us a component's "`Scope`" which allows us to send messages, etc to the component.
-        let link = ctx.link();
-        html! {
-            <div>
-                <button onclick={link.callback(|_| Msg::AddOne)}>{ "+1" }</button>
-                <p>{ self.value }</p>
-            </div>
-        }
+    html! {
+        <div>
+        <h1>{ "Users" }</h1>
+        <UserList users={(*users).clone()} />
+        </div>
     }
 }
 
 fn main() {
-    yew::start_app::<Model>();
+    yew::start_app::<App>();
 }
